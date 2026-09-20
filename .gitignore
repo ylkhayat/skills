@@ -1,0 +1,20 @@
+# Deny everything, then allow only the skills that ship. Anything not named below —
+# other skills, settings, credentials-adjacent state, transcripts, per-project memory —
+# is never staged, so a private skill cannot be added to this repo by accident.
+/*
+!/.gitignore
+!/README.md
+!/.claude-plugin/
+!/skills/ai-ethics/
+!/skills/linear-comment/
+!/skills/linear-ticket/
+!/skills/review-exchange/
+!/skills/review-pr/
+!/skills/revise/
+
+# Build noise
+__pycache__/
+*.pyc
+*.bak
+# Your filled-in copy stays local; config.example.md ships.
+/skills/review-exchange/config.md
