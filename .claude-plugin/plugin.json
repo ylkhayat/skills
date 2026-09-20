@@ -1,0 +1,10 @@
+{
+  "name": "review-skills",
+  "description": "Crit-driven code review: /review-pr for someone else's PR, /revise for your own, plus the shared review vocabulary and Linear/attribution helpers.",
+  "version": "1.0.0",
+  "author": { "name": "ylkhayat" },
+  "homepage": "https://github.com/ylkhayat/skills",
+  "repository": "https://github.com/ylkhayat/skills",
+  "license": "MIT",
+  "keywords": ["code-review", "pull-request", "crit", "linear"]
+}
