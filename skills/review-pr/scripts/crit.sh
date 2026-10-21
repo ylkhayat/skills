@@ -79,7 +79,7 @@ remember_session() {
   local k; k=$(curl -s -m 2 "localhost:$CRIT_PORT/api/session" | jq -r '.session_key // empty')
   [[ -n $k ]] || return 0
   grep -q "^CRIT_SESSION=" "$env_file" 2>/dev/null \
-    && sed -i '' "s|^CRIT_SESSION=.*|CRIT_SESSION=$k|" "$env_file" \
+    && sed -i.bak "s|^CRIT_SESSION=.*|CRIT_SESSION=$k|" "$env_file" && rm -f "$env_file.bak" \
     || echo "CRIT_SESSION=$k" >> "$env_file"
 }
 
@@ -216,7 +216,7 @@ case ${1:-} in
   author)
     load_env
     [[ -n ${2:-} ]] || { echo "crit.sh author <findings.json>" >&2; exit 1; }
-    payload=$(mktemp -t crit-payload).json; : >"$payload"
+    payload=$(mktemp "${TMPDIR:-/tmp}/crit-payload.XXXXXX").json; : >"$payload"
     # Render BEFORE pruning: render.py dies on an invalid findings.json, and a prune
     # that ran first would have thrown away the good comments to post nothing.
     python3 "$here/render.py" crit "$2" > "$payload"

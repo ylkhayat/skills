@@ -35,14 +35,14 @@ submit)
   f=$2; load_ids "$f"
   event=$(render event "$f")
   [[ $event == APPROVE || $event == COMMENT ]] || { echo "gh-review.sh: refusing event $event" >&2; exit 1; }
-  payload=$(mktemp -t gh-review).json; : >"${payload}"
+  payload=$(mktemp "${TMPDIR:-/tmp}/gh-review.XXXXXX").json; : >"${payload}"
   render payload "$f" > "$payload"
   if [[ ${3:-} == --dry-run ]]; then
     echo "--- event: $event   comments: $(jq '.comments|length' "$payload")"
     jq . "$payload"; exit 0
   fi
   before=$(gh api "repos/$owner/$repo/pulls/$n/reviews" --jq 'length' 2>/dev/null || echo "?")
-  resp=$(mktemp -t gh-review-resp).json; : >"${resp}"
+  resp=$(mktemp "${TMPDIR:-/tmp}/gh-review-resp.XXXXXX").json; : >"${resp}"
   if ! gh api "repos/$owner/$repo/pulls/$n/reviews" --input "$payload" > "$resp"; then
     echo "gh-review.sh: POST failed. A 5xx can still have created the review —" >&2
     echo "  check: gh api repos/$owner/$repo/pulls/$n/reviews   (was $before before this call)" >&2
@@ -53,9 +53,9 @@ submit)
   jq -r '"posted    \(.html_url)\n          state \(.state)  as \(.user.login)"' "$resp"
 
   # Pair each posted comment back to its finding on path+line, then PUT the body with the links.
-  posted=$(mktemp -t gh-review-posted).json; : >"${posted}"
+  posted=$(mktemp "${TMPDIR:-/tmp}/gh-review-posted.XXXXXX").json; : >"${posted}"
   gh api "repos/$owner/$repo/pulls/$n/comments?per_page=100" > "$posted"
-  linked=$(mktemp -t gh-review-linked).json; : >"${linked}"
+  linked=$(mktemp "${TMPDIR:-/tmp}/gh-review-linked.XXXXXX").json; : >"${linked}"
   # `first(...) // null` is load-bearing: a bare `(stream) as $m` over an empty
   # stream yields ZERO outputs, so every finding that failed to pair — and every
   # reply record, which never pairs — would be silently dropped from the map.
@@ -69,7 +69,7 @@ submit)
   missing=$(jq '[.findings[]|select(.reply_to==null and .thread_url==null)]|length' "$linked")
   [[ $missing -eq 0 ]] || echo "warn      $missing finding(s) did not pair to a posted comment — check the anchors" >&2
 
-  body=$(mktemp -t gh-review-body).md; : >"${body}"
+  body=$(mktemp "${TMPDIR:-/tmp}/gh-review-body.XXXXXX").md; : >"${body}"
   render body "$linked" > "$body"
   jq -n --rawfile b "$body" '{body:$b}' \
     | gh api -X PUT "repos/$owner/$repo/pulls/$n/reviews/$review_id" --input - \
@@ -95,10 +95,10 @@ refresh)
   f=$2; load_ids "$f"
   review_id=$(jq -r '.review_id' "$f")
   [[ $review_id != null ]] || { echo "gh-review.sh: no review_id in $f — nothing to refresh" >&2; exit 1; }
-  prev=$(mktemp -t gh-review-prev).md; : >"${prev}"
+  prev=$(mktemp "${TMPDIR:-/tmp}/gh-review-prev.XXXXXX").md; : >"${prev}"
   gh api "repos/$owner/$repo/pulls/$n/reviews/$review_id" --jq .body > "$prev"
   echo "backup    previous body at $prev"
-  body=$(mktemp -t gh-review-body).md; : >"${body}"
+  body=$(mktemp "${TMPDIR:-/tmp}/gh-review-body.XXXXXX").md; : >"${body}"
   render body "$f" > "$body"
   jq -n --rawfile b "$body" '{body:$b}' \
     | gh api -X PUT "repos/$owner/$repo/pulls/$n/reviews/$review_id" --input - --jq '"refreshed \(.html_url)"'
