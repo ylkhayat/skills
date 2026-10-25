@@ -216,7 +216,8 @@ case ${1:-} in
   author)
     load_env
     [[ -n ${2:-} ]] || { echo "crit.sh author <findings.json>" >&2; exit 1; }
-    payload=$(mktemp "${TMPDIR:-/tmp}/crit-payload.XXXXXX").json; : >"$payload"
+    # the X's form works with both GNU (Linux) and BSD (macOS) mktemp; `-t name` is BSD-only
+    payload=$(mktemp "${TMPDIR:-/tmp}/crit-payload.XXXXXX")
     # Render BEFORE pruning: render.py dies on an invalid findings.json, and a prune
     # that ran first would have thrown away the good comments to post nothing.
     python3 "$here/render.py" crit "$2" > "$payload"
@@ -226,7 +227,10 @@ case ${1:-} in
     # the safe default it reads as.
     rp=$(session_review)
     [[ -n $rp && -f $rp ]] && python3 "$here/prune_authored.py" "$rp"
-    crit comment --json --file "$payload" --author 'Claude Code'
+    # never with CRIT_PORT in its environment: then `crit comment` skips the daemon and writes comments with no
+    # focus_key, which the browser hides (crit-mechanics.md). load_env exported it for the curls in verify.
+    env -u CRIT_PORT crit comment --json --file "$payload" --author 'Claude Code'
+    rm -f "$payload"
     verify
     ;;
   verify)   verify ;;
