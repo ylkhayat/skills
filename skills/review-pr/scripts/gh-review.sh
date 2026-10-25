@@ -11,6 +11,8 @@
 # State lives in <state root>/review-pr/<owner>-<repo>-<n>.json so a later round
 # reads a known record instead of re-matching threads by path+line.
 set -euo pipefail
+# a temp file that works with both GNU (Linux) and BSD (macOS) mktemp; `mktemp -t name` is BSD-only
+tmp() { mktemp "${TMPDIR:-/tmp}/$1.XXXXXX"; }
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 render() { python3 "$here/render.py" "$@"; }
@@ -23,7 +25,10 @@ load_ids() {
 }
 
 save_state() {
-  cp "$1" "$state"
+  # diff_fingerprint lets a later round tell a real change to the PR from a rebase that only moved it.
+  fp=$("$here/diff-fingerprint.sh" "$n" "$owner/$repo" 2>/dev/null || echo "")
+  tmp=$(tmp gh-review-state)
+  jq --arg fp "$fp" '.diff_fingerprint = $fp' "$1" > "$tmp" && mv "$tmp" "$state"
   echo "state     $state"
 }
 
@@ -35,14 +40,14 @@ submit)
   f=$2; load_ids "$f"
   event=$(render event "$f")
   [[ $event == APPROVE || $event == COMMENT ]] || { echo "gh-review.sh: refusing event $event" >&2; exit 1; }
-  payload=$(mktemp "${TMPDIR:-/tmp}/gh-review.XXXXXX").json; : >"${payload}"
+  payload=$(tmp gh-review); : >"${payload}"
   render payload "$f" > "$payload"
   if [[ ${3:-} == --dry-run ]]; then
     echo "--- event: $event   comments: $(jq '.comments|length' "$payload")"
     jq . "$payload"; exit 0
   fi
   before=$(gh api "repos/$owner/$repo/pulls/$n/reviews" --jq 'length' 2>/dev/null || echo "?")
-  resp=$(mktemp "${TMPDIR:-/tmp}/gh-review-resp.XXXXXX").json; : >"${resp}"
+  resp=$(tmp gh-review-resp); : >"${resp}"
   if ! gh api "repos/$owner/$repo/pulls/$n/reviews" --input "$payload" > "$resp"; then
     echo "gh-review.sh: POST failed. A 5xx can still have created the review —" >&2
     echo "  check: gh api repos/$owner/$repo/pulls/$n/reviews   (was $before before this call)" >&2
@@ -53,9 +58,9 @@ submit)
   jq -r '"posted    \(.html_url)\n          state \(.state)  as \(.user.login)"' "$resp"
 
   # Pair each posted comment back to its finding on path+line, then PUT the body with the links.
-  posted=$(mktemp "${TMPDIR:-/tmp}/gh-review-posted.XXXXXX").json; : >"${posted}"
+  posted=$(tmp gh-review-posted); : >"${posted}"
   gh api "repos/$owner/$repo/pulls/$n/comments?per_page=100" > "$posted"
-  linked=$(mktemp "${TMPDIR:-/tmp}/gh-review-linked.XXXXXX").json; : >"${linked}"
+  linked=$(tmp gh-review-linked); : >"${linked}"
   # `first(...) // null` is load-bearing: a bare `(stream) as $m` over an empty
   # stream yields ZERO outputs, so every finding that failed to pair — and every
   # reply record, which never pairs — would be silently dropped from the map.
@@ -69,7 +74,7 @@ submit)
   missing=$(jq '[.findings[]|select(.reply_to==null and .thread_url==null)]|length' "$linked")
   [[ $missing -eq 0 ]] || echo "warn      $missing finding(s) did not pair to a posted comment — check the anchors" >&2
 
-  body=$(mktemp "${TMPDIR:-/tmp}/gh-review-body.XXXXXX").md; : >"${body}"
+  body=$(tmp gh-review-body); : >"${body}"
   render body "$linked" > "$body"
   jq -n --rawfile b "$body" '{body:$b}' \
     | gh api -X PUT "repos/$owner/$repo/pulls/$n/reviews/$review_id" --input - \
@@ -95,10 +100,10 @@ refresh)
   f=$2; load_ids "$f"
   review_id=$(jq -r '.review_id' "$f")
   [[ $review_id != null ]] || { echo "gh-review.sh: no review_id in $f — nothing to refresh" >&2; exit 1; }
-  prev=$(mktemp "${TMPDIR:-/tmp}/gh-review-prev.XXXXXX").md; : >"${prev}"
+  prev=$(tmp gh-review-prev); : >"${prev}"
   gh api "repos/$owner/$repo/pulls/$n/reviews/$review_id" --jq .body > "$prev"
   echo "backup    previous body at $prev"
-  body=$(mktemp "${TMPDIR:-/tmp}/gh-review-body.XXXXXX").md; : >"${body}"
+  body=$(tmp gh-review-body); : >"${body}"
   render body "$f" > "$body"
   jq -n --rawfile b "$body" '{body:$b}' \
     | gh api -X PUT "repos/$owner/$repo/pulls/$n/reviews/$review_id" --input - --jq '"refreshed \(.html_url)"'

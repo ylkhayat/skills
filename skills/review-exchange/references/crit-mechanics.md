@@ -37,6 +37,11 @@ filter too.
 daemon it prints `Note: ... no daemon running; head_sha unknown` and writes `focus_key: null` — and
 null-keyed comments are **hidden from the browser** while `crit status` still counts them.
 
+**On 0.23.0 it also happens silently with exactly one session for the cwd**: bare `crit comment`
+printed `Added N comments`, no `Note:`, and wrote `focus_key: null` anyway. Passing
+`--session <id>` stamped the range key. Pass `--session` on every `crit comment`, and check
+`review.json` for null keys after each call rather than trusting the absence of the Note.
+
 The classic symptom is `crit status` says N, the browser shows 0. That is **not** "you launched with
 `--pr`" — it is a null `focus_key`, almost always from multiple sessions sharing the cwd. A restart
 does not fix it. Never hand-edit `focus_key`: guarantee the single-session precondition above, then
@@ -103,6 +108,10 @@ when comments render correctly).
   :<port>` can also return an unrelated client. `pkill -9 -f "crit _serve"` plus `pkill -9 -f "^crit
   --"`, then confirm the port is free, is what actually clears it. A launch that prints **"Connected to
   crit daemon"** rather than "Started"/"Restarted" means a daemon survived and your flags were ignored.
+- **Never set `CRIT_PORT` on `crit comment` (0.23.0).** Only the launch needs it. With it in the
+  environment, `crit comment` skips the daemon silently: it prints `Added N comments` with no
+  `Note: ... no daemon running`, and writes entries with no `focus_key`/`head_sha`, which the browser
+  hides. Seen 2026-10-20; `env -u CRIT_PORT crit comment ...` stamped correctly.
 - **Pin the port with `CRIT_PORT`, not `--port`.** The flag works on a fresh launch but is dropped on
   reconnect: `daemonArgsForReconnect` rebuilds the `_serve` argv from `cli_args` plus host/public-url
   and never re-adds the port, so a restart lands on a fresh random one (51710 → 52205 → 52288 across

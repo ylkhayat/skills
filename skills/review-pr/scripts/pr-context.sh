@@ -99,8 +99,8 @@ have() { jq -e --arg s "$1" '.scripts[$s]' package.json >/dev/null 2>&1; }
 # and the caller reading our digest hangs until typecheck finishes.
 (
   cd "$wt" || exit
-  { have typecheck && pnpm typecheck; } >"$out/typecheck.log" 2>&1
-  { have lint      && pnpm lint;      } >"$out/lint.log"      2>&1
+  { have typecheck && nice -n 10 pnpm typecheck; } >"$out/typecheck.log" 2>&1
+  { have lint      && nice -n 10 pnpm lint;      } >"$out/lint.log"      2>&1
   echo "done" > "$out/tooling.done"
 ) >/dev/null 2>&1 </dev/null &
 disown 2>/dev/null || true
