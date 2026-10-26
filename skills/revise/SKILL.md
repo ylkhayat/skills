@@ -574,6 +574,11 @@ still be deciding is a reply that was never drafted, so go back to Phase 4 and d
 1. **Re-read the drafts before sending.** Rounds may have moved on since they were written: a thread that
    later got reversed, a `file:line` that shifted under a newer fix, a sha that is no longer the one that
    carries the change. Re-check each against the tree, and fix the draft rather than sending a stale one.
+   **Then pull the work-list again** (Phase 0, "With one PR selected", step 4), because reviewers keep reviewing while the
+   rounds run. Compare against the work-list you sorted. Anything new is any thread, comment, or review
+   with a body, or any new commit on the remote branch. If something is new, stop: publish nothing,
+   sort the new items into the round, and tell the human what arrived. A push on top of a review you
+   never read answers a question nobody asked and leaves the one they did ask unanswered.
 2. **Push**, by the rule at the top of this file — plain `git push` on a published head, `gh stack rebase
    --upstack` first when an amend moved descendants. A rejected push means `git fetch` and rebase your own
    commit onto the new head, never `--force`.
