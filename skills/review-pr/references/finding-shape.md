@@ -17,6 +17,7 @@ a cap is breached.
 | `failure` | The state that produces the failure, what the user ends up with, and the cite. |
 | `fix` | One fix. Empty is fine; the renderer drops the label. |
 | `repro` | The command and what it printed. |
+| `norm`, `source` | NORM only: the rule in one line, and the https link to the primary document that states it. Rendered as `Norm:` and `Source:` lines, which Concierge reads back. |
 | `why.mechanism` · `why.detail` · `why.takeaway` · `why.not_verified` | The fold's overflow, in that order. |
 | `flagged_by` | Who raised it, as a GitHub login. Omit for Claude — the renderer defaults it. |
 | `endorsed_by` | List of who agreed, in the order they said so. Omit when nobody has. |

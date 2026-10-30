@@ -34,6 +34,10 @@ SEV = {
     # counterparty is not a defect with a consequence to grade. A dead guard that also
     # breaks something is a defect at its own severity, not a DEAD.
     "DEAD": "![dead](https://img.shields.io/badge/dead-86198f?style=flat-square)",
+    # NORM: the code works and differs from a documented convention (house, ecosystem or
+    # language). Advisory, so it replaces a severity too; a drift that breaks something or
+    # opens a hole is a defect at its own severity. See review-exchange, "Norm".
+    "NORM": "![norm](https://img.shields.io/badge/norm-4f46e5?style=flat-square)",
 }
 ASK = {
     "blocking": "![blocking](https://img.shields.io/badge/blocking-1f2328?style=flat-square)",
@@ -64,8 +68,8 @@ def provenance(f):
 
 
 GLYPH = {"open": "●", "fixed": "✓", "answered": "↩", "theirs": "—"}
-SEV_ORDER = {"HIGH": 0, "MEDIUM": 1, "LOW": 2, "DEAD": 3, "SCOPE": 4}
-SHORT_SEV = {"HIGH": "HIGH", "MEDIUM": "MED", "LOW": "LOW", "DEAD": "DEAD", "SCOPE": "SCOPE"}
+SEV_ORDER = {"HIGH": 0, "MEDIUM": 1, "LOW": 2, "NORM": 3, "DEAD": 4, "SCOPE": 5}
+SHORT_SEV = {"HIGH": "HIGH", "MEDIUM": "MED", "LOW": "LOW", "NORM": "NORM", "DEAD": "DEAD", "SCOPE": "SCOPE"}
 
 warnings = []
 
@@ -114,6 +118,12 @@ def load(path):
             die(f"finding {fid}: a SCOPE finding is always non-blocking, never {f['ask']!r}")
         if f["severity"] == "DEAD" and f["ask"] != "non-blocking":
             die(f"finding {fid}: a DEAD finding is always non-blocking, never {f['ask']!r}")
+        if f["severity"] == "NORM" and f["ask"] != "non-blocking":
+            die(f"finding {fid}: a NORM finding is always non-blocking, never {f['ask']!r}")
+        # A norm without its source is an opinion (norms-lens.md): the rule in one line, and
+        # the primary document that states it.
+        if f["severity"] == "NORM" and not (f.get("norm") and str(f.get("source", "")).startswith("https://")):
+            die(f"finding {fid}: a NORM finding needs `norm` (the rule, one line) and `source` (an https link to where it is written)")
         # The search IS the evidence (deletion-lens.md). "Looks unused" is rung 1, and a
         # deletion asserted without the command that found nothing is how the one caller
         # in another shard gets deleted.
@@ -122,7 +132,7 @@ def load(path):
         why = f.get("why") or {}
         # A scope note lives entirely above the fold — an essay defending a nudge is the
         # thing the cap exists to prevent, so it is not warned for an empty toggle.
-        for key in ("mechanism", "takeaway") if f["severity"] not in ("SCOPE", "DEAD") else ():
+        for key in ("mechanism", "takeaway") if f["severity"] not in ("SCOPE", "DEAD", "NORM") else ():
             if not why.get(key):
                 warn(f"finding {fid}: why.{key} is empty")
         above = sentences(f["claim"]) + sentences(f.get("failure", ""))
@@ -148,8 +158,11 @@ def finding_body(f):
     tail = []
     if f.get("fix"):
         # a scope note has no fix — it has somewhere else to live
-        label = {"SCOPE": "Home", "DEAD": "Delete"}.get(f["severity"], "Fix")
+        label = {"SCOPE": "Home", "DEAD": "Delete", "NORM": "Align"}.get(f["severity"], "Fix")
         tail.append(f"{label}: {f['fix']}")
+    if f.get("norm"):
+        # two fixed lines Concierge reads back for its Norms view: keep their shape
+        tail += [f"Norm: {f['norm']}", f"Source: <{f['source']}>"]
     if f.get("drops_with"):
         tail.append("Drops with it: " + ", ".join(f"`{d}`" for d in f["drops_with"]))
     if f.get("repro"):
@@ -361,6 +374,37 @@ def selftest():
         err = _io.StringIO()
         try:
             with _c.redirect_stderr(err):
+                load(fh.name)
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError(f"{why} must not render")
+    # ---- NORM: the drift that carries its source
+    ndoc = {
+        "pr": 1, "owner": "o", "repo": "r", "round": 1, "aidr": "One.",
+        "findings": [
+            {"id": "n1", "path": "src/Today.tsx", "line": 42, "severity": "NORM",
+             "ask": "non-blocking", "status": "open",
+             "claim": "State derived in an effect renders twice.",
+             "fix": "compute it during render",
+             "norm": "Don't use an effect to derive state from props or state",
+             "source": "https://react.dev/learn/you-might-not-need-an-effect"},
+        ],
+    }
+    nb = finding_body(ndoc["findings"][0])
+    assert nb.split("\n")[0].startswith(SEV["NORM"] + " " + ASK["non-blocking"] + " "), nb
+    assert "Align: compute it during render" in nb and "Fix:" not in nb, nb
+    assert "Norm: Don't use an effect" in nb and "Source: <https://react.dev/" in nb, nb
+    assert event(ndoc) == "APPROVE", "a drift never withholds approval"
+    assert SEV_ORDER["LOW"] < SEV_ORDER["NORM"] < SEV_ORDER["DEAD"], "NORM sorts below LOW, above DEAD"
+    for mutate, why in ((lambda d: d["findings"][0].update(ask="blocking"), "escalated NORM"),
+                        (lambda d: d["findings"][0].pop("source"), "NORM with no source"),
+                        (lambda d: d["findings"][0].update(source="react.dev"), "NORM with a bare source")):
+        bad = _j.loads(_j.dumps(ndoc)); mutate(bad)
+        fh = _t.NamedTemporaryFile("w", suffix=".json", delete=False)
+        _j.dump(bad, fh); fh.close()
+        try:
+            with _c.redirect_stderr(_io.StringIO()):
                 load(fh.name)
         except SystemExit:
             pass

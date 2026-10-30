@@ -200,7 +200,9 @@ issues into `findings.json` per `references/finding-shape.md`. For design, load
 belongs in this PR at all, load `references/scope-lens.md` alongside it and file what survives its
 exclusion list as SCOPE. For whether it needs to exist at all — a guard with no threat, a helper with no
 caller, a fallback for a shape nothing emits — load `references/deletion-lens.md`; it is the one that
-catches what the other two wave through. Write the review-level
+catches what the other two wave through. For whether it is done the way its libraries, its language and
+the house write it down, load `references/norms-lens.md` and file what survives its exclusions as NORM,
+with the source that states the rule. Write the review-level
 fields per `references/review-body.md`.
 
 **You are the lead, not an aggregator.** Dedup across the streams, find the one load-bearing fact,
@@ -319,6 +321,7 @@ Three shared files own what is not this skill's alone; fix it there, not here.
 
 - **`references/scope-lens.md`** — what makes a hunk out of scope, the exclusion list, the transitive closure and the three-cluster cap. Shared with `/revise`.
 - **`references/deletion-lens.md`** — the counterparty table, the grep that is the evidence, the never-simplify exclusions, and the earlier-round exception. Shared with `/revise`.
+- **`references/norms-lens.md`** — the three tiers (house over ecosystem over language), reading the rule at the pinned version, the exclusions and the three-thread cap.
 - **`references/fan-out.md`** — the stream table, the width thresholds, the return schema, and what the lead still has to do alone.
 - **the **review-exchange** skill** — the badges, the ladder, the cite rules, the reply shape, who resolves, the marker. Shared with `/revise`, which answers the threads this skill opens.
 - **`../review-exchange/references/crit-mechanics.md`** — the single-session precondition, the `focus_key` trap, the verification endpoints, restarts and ports, deleting a comment, why `crit push` is useless.

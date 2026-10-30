@@ -24,6 +24,7 @@ else's ticket.
 | LOW | `![LOW](https://img.shields.io/badge/LOW-0969da?style=flat-square)` | Correctness or clarity debt, naming, wording — no behaviour at stake. |
 | SCOPE | `![scope](https://img.shields.io/badge/scope-0f766e?style=flat-square)` | Not a defect. The change is fine and does not belong in this PR. |
 | DEAD | `![dead](https://img.shields.io/badge/dead-86198f?style=flat-square)` | Not a defect. The code has no counterparty — no caller, no producer, no threat — and deletes cleanly. |
+| NORM | `![norm](https://img.shields.io/badge/norm-4f46e5?style=flat-square)` | Not a defect. The code works and differs from a written convention: the house's, its libraries', or its language's. |
 
 | Ask | Badge markdown | Means |
 |---|---|---|
@@ -122,6 +123,32 @@ The counterparty table, the never-simplify exclusions, and the sharp case — a 
 round asked for, on a premise that turned out wrong, which is a `question` on *that thread* and never a
 unilateral deletion — are in `../review-pr/references/deletion-lens.md`, one file, both
 sides.
+
+## Norm: the drift that carries its source
+
+SCOPE says *not here*, DEAD says *not anywhere*. NORM says *not how it is usually done* — an effect that
+derives state, updates in a loop where the driver has a bulk call, an error swallowed where the
+framework's docs say rethrow. Each one is fine alone; together they are how a codebase drifts from what a
+new hire, a library upgrade or the docs expect.
+
+- **Three tiers, and the nearest wins.** House (the repo's ADRs, `CLAUDE.md`, lint config) over ecosystem
+  (the official docs of the library, at the version the repo pins) over language (its style guide, RFCs).
+  Where the house chose differently on purpose, the code following the house is *aligned*, not drift.
+- **NORM occupies the severity slot and never carries one.** A drift that breaks something, leaks data
+  or opens a hole is a defect at its own severity whose fix happens to be the norm — filed that way,
+  never as NORM. NORM is what is left when nothing is broken.
+- **The ask is always `non-blocking`.** It informs the author; it never withholds an approval.
+  `render.py` refuses anything else.
+- **The source is the evidence.** `norm` is the rule in one line; `source` is an https link to the
+  primary document that states it — the library's docs, the ADR, the style guide. Not a blog, not a
+  Stack Overflow answer, not "common practice". `render.py` refuses a NORM without both.
+- **`won't fix` needs no rung, and it has a name: deliberate.** "We do it this way on purpose" is the
+  whole answer. A deliberate exception the author keeps is a house norm in waiting: say where it should
+  be written down (an ADR) if it is not already.
+- **One thread per rule per PR**, naming every place it drifts, not one per occurrence.
+
+How to find them, the version check, and the exclusions that keep this from becoming taste are in
+`../review-pr/references/norms-lens.md`.
 
 ## The answer: one verdict badge
 
