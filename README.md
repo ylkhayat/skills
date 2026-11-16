@@ -27,7 +27,33 @@ skills/
   ai-ethics/         attribution marker for anything published
   linear-comment/    comments on Linear issues and projects
   linear-ticket/     small, scannable Linear tickets
+  ship-tickets/      Linear tickets to ready PRs, unattended
+  plan-project/      a product brief broken down into a project plan
+  …                  the skills Concierge runs (below)
 ```
+
+### The skills [Concierge](https://github.com/ylkhayat/concierge) runs
+
+Concierge only presents: how it explains, briefs, plans and writes is one of these, picked per feature in
+its Settings (or one of yours instead). It brings the facts and the output format its pages read; the skill
+brings the method. They are marked `disable-model-invocation`, so they stay out of your everyday sessions.
+
+| Skill | What Concierge uses it for |
+|---|---|
+| `explain-change` | The architecture map and guided tour of a pull request |
+| `explain-codebase` | The map of a codebase, one entry per folder, and its systems |
+| `explain-domain` | A change in the language of the business |
+| `stack-tour` | How a stack of PRs fits together |
+| `pr-turns` | How a PR changed direction with a push |
+| `settle-intent` | Settling what AI-built work is meant to do, as a decision record |
+| `check-understanding` | Making sure you understand a change |
+| `brief-ticket` | A ticket and its PRs in two or three sentences |
+| `write-standup` | Your daily update |
+| `plan-stacks` | Which tickets ship together, before a run of several |
+| `plan-project` | Breaking a brief down into a project, in Plans |
+| `ship-tickets` | Shipping Linear tickets as PRs (its exec command) |
+| `improve-skills` | Judging your skills from their runs |
+| `work-from-concierge` | Ground rules added to every run it starts |
 
 ## 1. What you need installed
 

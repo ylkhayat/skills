@@ -5,12 +5,28 @@
 !/.gitignore
 !/README.md
 !/.claude-plugin/
+!/skills/
+/skills/*
 !/skills/ai-ethics/
 !/skills/linear-comment/
 !/skills/linear-ticket/
 !/skills/review-exchange/
 !/skills/review-pr/
 !/skills/revise/
+!/skills/brief-ticket/
+!/skills/check-understanding/
+!/skills/explain-change/
+!/skills/explain-codebase/
+!/skills/explain-domain/
+!/skills/improve-skills/
+!/skills/plan-project/
+!/skills/plan-stacks/
+!/skills/pr-turns/
+!/skills/settle-intent/
+!/skills/ship-tickets/
+!/skills/stack-tour/
+!/skills/work-from-concierge/
+!/skills/write-standup/
 
 # Build noise
 __pycache__/

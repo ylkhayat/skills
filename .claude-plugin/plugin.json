@@ -1,10 +1,19 @@
 {
   "name": "review-skills",
-  "description": "Crit-driven code review: /review-pr for someone else's PR, /revise for your own, plus the shared review vocabulary and Linear/attribution helpers.",
+  "description": "Crit-driven code review (/review-pr, /revise and their shared vocabulary), shipping tickets, project planning, Linear and attribution helpers, and the skills Concierge runs to explain, brief, plan and write.",
   "version": "1.0.0",
-  "author": { "name": "ylkhayat" },
+  "author": {
+    "name": "ylkhayat"
+  },
   "homepage": "https://github.com/ylkhayat/skills",
   "repository": "https://github.com/ylkhayat/skills",
   "license": "MIT",
-  "keywords": ["code-review", "pull-request", "crit", "linear"]
+  "keywords": [
+    "code-review",
+    "pull-request",
+    "crit",
+    "linear",
+    "planning",
+    "concierge"
+  ]
 }
