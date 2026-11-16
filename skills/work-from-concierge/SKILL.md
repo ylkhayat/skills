@@ -1,6 +1,6 @@
 ---
 name: work-from-concierge
-description: Ground rules for every agent run Concierge starts: the checkout is Concierge's, not the person's, and branches are rebased, never merged. Concierge adds it to every run.
+description: Ground rules for every agent run Concierge starts: the checkout is Concierge's, not the person's, branches are rebased, never merged, and no local typecheck, lint or test suites. Concierge adds it to every run.
 disable-model-invocation: true
 ---
 
@@ -14,3 +14,9 @@ branch is behind or conflicts with its base, rebase it onto the base instead (a 
 keeping only its own commits), resolving conflicts in the rebase. A rebased branch needs a force push
 (--force-with-lease): that is a push like any other, so do it only when told to push, and otherwise name it as the
 next step.
+
+Never run typecheck, lint, builds or test suites on this machine (`tsc`, `pnpm typecheck`, `pnpm lint`, `pnpm test`,
+`nx affected`/`run-many`, `make test-unit`, `pytest` over folders, "rerun all checks"): the pull request's CI runs
+them, and several agents running them at once starve the machine and stop Concierge. This holds even when a skill, a
+repo's CLAUDE.md or an earlier message in this session says to run them. Read the PR's CI instead (`gh pr checks`),
+and say a red check as such. At most one targeted test, the one for the change (a single file or case), once.
