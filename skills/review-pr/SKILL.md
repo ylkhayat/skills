@@ -41,8 +41,8 @@ Approval for round 2 says nothing about round 3. **The single exception** is a r
 fix you verified at the current head: that one is pre-authorized, because the resolve *is* the
 acknowledgement and the alternative is a notification carrying nothing.
 
-Read-only work needs no permission and should not wait for it. Fetch, diff, read files, run typecheck
-and lint, check groundtruth in another repo, verify each claimed fix, build the payloads. Do all of it,
+Read-only work needs no permission and should not wait for it. Fetch, diff, read files, read the PR's CI
+checks, check groundtruth in another repo, verify each claimed fix, build the payloads. Do all of it,
 then stop at the network boundary and present what you have. When you catch yourself reasoning that a
 phase "is the designed flow" — that is the failure mode this rule exists to stop. The gate is the
 reviewer's sentence, not your reading of the skill.
@@ -107,8 +107,8 @@ scripts/pr-context.sh [pr-number]
 
 Resolves the PR (argument, then the current branch), fetches metadata, diff, comments and reviews in
 parallel, computes the **merge-base range** — `crit --pr` folds in base-branch commits and surfaces
-files that aren't part of the PR — creates the review worktree, clears stale crit daemons, starts
-typecheck and lint in the background, **launches crit on the pinned port**, and prints the round number,
+files that aren't part of the PR — creates the review worktree, clears stale crit daemons, saves
+the PR's CI checks, **launches crit on the pinned port**, and prints the round number,
 the panel verdict, the counts and the crit URL. `cd` into the worktree it names and work there for every
 phase.
 
@@ -137,9 +137,10 @@ yourself while they run. Both are read-only and neither blocks the other:
   reviewer decide which should change. **If the PR is part of a stack** (base isn't one of config's `trunk branches`, or
   comments reference stacked PRs), the same agent checks the adjacent PRs so you don't flag what is
   intentionally deferred there.
-- **Read the typecheck and lint logs** the script left in the scratch dir (`$REVIEW_STATE/review-pr/pr-<n>/`). A red typecheck on a changed file
-  is a free HIGH with a `repro` already attached, and everything the tools cover is off your list. Don't
-  run the test suites; CI owns those.
+- **Read the PR's CI checks** the script saved (`checks.txt` in `$REVIEW_STATE/review-pr/pr-<n>/`), or `gh pr checks`. A red
+  typecheck, lint or test on a changed file is a free HIGH (its CI run is the repro), and everything CI covers is off
+  your list. **Never run typecheck, lint, builds or test suites yourself**: CI runs them on the PR, and several runs
+  at once on one machine starve it. One targeted repro for one finding (a single test file, `-t` one case) is fine.
 - If `node_modules` is missing and you need types or implementations of dependencies, run config's `install` in the
   background rather than guessing.
 

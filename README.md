@@ -132,7 +132,7 @@ it, so nothing in `skills/` hardcodes anything that belongs to a particular repo
 |---|---|
 | `repos` | which repos `/revise` searches for PRs with feedback waiting on you |
 | `trunk branches` | how `/review-pr` notices a PR is stacked on another PR rather than on trunk |
-| `install` / `typecheck` / `lint` | run in the background during Phase 0; a red typecheck becomes a finding with its repro already attached |
+| `install` | run in the background when the review needs dependencies' types; typecheck, lint and tests are left to the PR's CI |
 | `fix` | run before `git add` so formatting never lands in a follow-up commit |
 | `test` | the shape of the repro line in a finding |
 | `convention files` | globs for your house rules; gathered once, cached, and passed to agents as a path |

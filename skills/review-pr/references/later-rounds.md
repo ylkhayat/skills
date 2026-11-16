@@ -22,7 +22,7 @@ a public claim that the thread is closed, and an unresolve does not un-notify an
    and re-running N repros is N independent jobs, so dispatch **one `haiku` agent per claimed fix in one
    message** (`references/fan-out.md`), each returning
    `{thread_id, landed, evidence, repro_result}`. Below four, do it yourself; the briefing costs more
-   than the read. Either way run typecheck and lint once at the top and chase any external claim to
+   than the read. Either way read the PR's CI checks once at the top (never run typecheck, lint or suites yourself) and chase any external claim to
    groundtruth yourself. Then update `status` on each record in the state file
    (`$REVIEW_STATE/review-pr/<owner>-<repo>-<n>.json`) and draft every reply into a file.
 

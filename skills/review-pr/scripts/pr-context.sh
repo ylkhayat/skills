@@ -91,19 +91,9 @@ CRIT_PORT=$crit_port
 CRIT_RANGE=$range
 ENV
 
-# Tooling reviews first, in the background. Skipped cleanly when the repo has no such script.
-have() { jq -e --arg s "$1" '.scripts[$s]' package.json >/dev/null 2>&1; }
-# One background job, run in sequence: a fresh worktree has no node_modules, and two
-# concurrent pnpm scripts each trigger an install into the same store. Redirect at the
-# subshell, not just the command — a child inheriting this stdout holds the pipe open
-# and the caller reading our digest hangs until typecheck finishes.
-(
-  cd "$wt" || exit
-  { have typecheck && nice -n 10 pnpm typecheck; } >"$out/typecheck.log" 2>&1
-  { have lint      && nice -n 10 pnpm lint;      } >"$out/lint.log"      2>&1
-  echo "done" > "$out/tooling.done"
-) >/dev/null 2>&1 </dev/null &
-disown 2>/dev/null || true
+# No typecheck, lint or tests here: CI runs them on the PR, and several reviews at once ran them all on one machine.
+# The review reads the PR's own checks instead (gh pr checks, below).
+gh pr checks "$n" >"$out/checks.txt" 2>&1 || true
 
 # Launch crit now rather than in Phase 1. Everything it needs is already computed, and
 # the reviewer should be reading the diff while Phase 0's triage is still running —
@@ -119,7 +109,7 @@ round       $round
 range       $range
 worktree    $wt        (cd there for every phase)
 context     $out/{meta,comments,reviews}.json  diff.patch
-tooling     $out/{typecheck,lint}.log  (sequential, in the background; $out/tooling.done when finished)
+checks      $out/checks.txt  (the PR's CI, as GitHub has it now)
 size        $files files · $lines lines changed · $risky risky paths
 comments    $human human · $bots bot   (reply on these before authoring anything new)
 ticket      ${ticket:-none}

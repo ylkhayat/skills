@@ -75,10 +75,10 @@ single message. Serialize in the main loop only if neither is available.
    guard plus the refactor next to it. Where the thread names a behaviour, prove it red-then-green and
    quote that command in the reply. No code comments, docstrings, or documentation unless the thread
    explicitly asks for one; then write exactly that one.
-4. **Verify.** Typecheck, lint, and the thread's own ask. Read `AGENTS.md` / `CLAUDE.md` for what the
-   project expects and whether suites run locally. Distinguish breakage you caused from breakage already
-   on the branch — stash and re-run to be sure — and report pre-existing breakage instead of quietly
-   fixing it.
+4. **Verify the thread's own ask**, with its one targeted repro when it has one (a single test file or case). Never
+   run typecheck, lint, builds or test suites: CI runs them on the PR, and several agents running them at once
+   starve the machine. Read the PR's CI (`gh pr checks`) for those, and tell breakage you caused from breakage
+   already on the branch by its CI history, reporting pre-existing breakage instead of quietly fixing it.
 5. **Format, then commit once — and stop.** The repo's fix task over the tree, restore what it touched
    outside your diff, one commit for the PR. **Do not push.** The parent pushes, later, when told to.
 6. **Draft** one reply per thread, to a file under `$REVIEW_STATE/revise/<pr>/` (`reply-<pr>-<thread>.json`, a

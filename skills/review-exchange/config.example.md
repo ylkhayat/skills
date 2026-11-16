@@ -18,7 +18,6 @@ script", and an empty playbook or bot row is just one less input to the review.
 | `repos` | `acme/web`, `acme/desktop-app` | revise picker |
 | `trunk branches` | `main`, `develop` | review-pr stack detection |
 | `install` | `pnpm install --prefer-offline` | both |
-| `typecheck` / `lint` | `pnpm typecheck` / `pnpm lint` | review-pr Phase 0 |
 | `fix` | `pnpm fix:all` (oxfmt, then oxlint --fix) | revise, before `git add` |
 | `test` | `pnpm vitest run` | revise repro lines |
 | `convention files` | `docs/conventions/*.md`, `.cursor/BUGBOT.md`, `*/.cursor/BUGBOT.md` | revise |
