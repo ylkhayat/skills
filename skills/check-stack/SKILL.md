@@ -20,5 +20,11 @@ What counts:
 For each one: the PRs involved, a title of at most 10 words, why in one or two sentences naming the two sides, and the
 smallest fix, saying which PR should change. Plain words, no filler.
 
+direction: the direction the stack follows, as the pull requests themselves show it, for every agent working on one
+of them to hold to. Three to six short lines, each one rule or decision that crosses PRs ("The tool list lives at the
+top level of the Agent State, not inside the Workbench", "Wire names stay as they are; renames go in a follow-up").
+Only what the texts settle: where the PRs disagree, that is an issue above, not a line here. When the person has
+written a direction already, keep what they wrote and add only what is new.
+
 agrees: one sentence on what the PRs do agree on, so the reader knows what was looked at. When a PR has no findings
 yet, say it wasn't checked instead of guessing.
