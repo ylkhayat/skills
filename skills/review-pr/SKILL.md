@@ -279,7 +279,9 @@ conclusion the author needs.
    GitHub payload is flattened.
 
 Print the final set for sign-off — `scripts/gh-review.sh submit findings.json --dry-run` prints exactly
-the bytes that will land. Wait for the explicit go-ahead.
+the bytes that will land, **and say the event in words** ("this approves, with f1 as a non-blocking comment" /
+"this comments, because f2 blocks"). Wait for the explicit go-ahead. Asking for a finding to go out "as a
+comment" is not asking to withhold approval (`references/review-body.md`).
 
 ## Phase 5: submit (only when the reviewer asks)
 

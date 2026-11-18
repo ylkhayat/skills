@@ -75,6 +75,13 @@ Three things pull an otherwise-approvable review back to `COMMENT`. The first is
 - **A HIGH-risk area you could not verify.** If `didnt_run` is hiding something that would be a HIGH if it went the other way — a migration you could not run, a claim resting on a base PR that has since moved — say so and stay at `COMMENT`.
 - **An open question whose answer could be a HIGH.** A `question` filed because severity was unclear is not automatically a LOW.
 
+**The reviewer's words never set the event.** "Post f1 as a non-blocking comment", "leave it as a comment",
+"submit the review" name *what* goes out, not whether you approve: the table above decides, so only non-blocking
+findings still approve, with those findings as inline comments. `force_comment` is yours to set for the two reasons
+above, or when the reviewer says in so many words not to approve ("don't approve", "comment only, no approval",
+"hold the approval"). Unsure which they meant: the dry-run already prints the event, so name it there ("this
+approves, with f1 as a non-blocking comment") and let them object before anything is posted.
+
 A stacked PR is judged on its own merits: the base still being under review is not a reason to withhold
 approval, since the approval is against that base.
 
