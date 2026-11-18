@@ -22,6 +22,14 @@ Steps (what will be done once the decisions are in):
   lower PR before the ones built on it, a rebase before the push that depends on it.
 - Keep each to one line, starting with a verb, naming the PR by its number.
 - A step is `public` when it shows outside the person's machine: a push, a posted reply or comment, a ticket change.
+- A step is a `check` when it only reads or waits and changes nothing: read a CI result, re-check a rebase, wait for
+  a run. It is shown apart, as what the agents confirm before going on.
+- When several PRs of the stack each push and rebase, say so once at the end of the public steps rather than per PR:
+  the person can realign the whole stack in one go (a restack that rebases each PR on the one below and pushes).
+- A step is a `check` when it only reads or waits and changes nothing: read a CI result, re-check a rebase, wait for
+  a run. It is shown apart, as what the agents confirm before going on.
+- When several PRs of the stack each push and rebase, say so once at the end of the public steps rather than per PR:
+  the person can realign the whole stack in one go (a restack that rebases each PR on the one below and pushes).
 - Leave a step off (`on: false`) when another step replaces it, when it would undo one you kept, or when it only waits
   for someone else ("answer the follow-up once it arrives"). Say why in a few words.
 
