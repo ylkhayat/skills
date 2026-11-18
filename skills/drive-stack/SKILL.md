@@ -40,6 +40,11 @@ when the stack is consistent and its work is done, or when one decision only the
 - **Decide what you can.** Ask the person only for a product decision the direction doesn't settle; take the
   recommended option for everything else and say so.
 - **Someone else's PR:** never change it; draft a comment for its author in your report instead.
+- **Stay on the stack.** No Linear tickets or comments, no memory files, no CI waiting: name those in the report
+  instead. Update a PR's description only where your change made it wrong, in one edit per PR at the end.
+- **Batch the mechanical work.** A rename or a removed field across a PR is one scripted pass and one test run, not
+  file by file. Rebase with `git rebase --update-refs` on the top branch when the branches form a line, so the whole
+  chain moves in one rebase instead of one per PR.
 - **Cheap reading.** Read stats and the relevant hunks, not whole files or whole logs. Don't re-run a full test suite
   per PR: the touched files' tests, once per PR.
 
