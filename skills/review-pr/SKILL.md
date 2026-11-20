@@ -107,8 +107,8 @@ scripts/pr-context.sh [pr-number]
 
 Resolves the PR (argument, then the current branch), fetches metadata, diff, comments and reviews in
 parallel, computes the **merge-base range** — `crit --pr` folds in base-branch commits and surfaces
-files that aren't part of the PR — creates the review worktree, clears stale crit daemons, saves
-the PR's CI checks, **launches crit on the pinned port**, and prints the round number,
+files that aren't part of the PR — creates the review worktree, clears stale crit daemons,
+**launches crit on the pinned port**, and prints the round number,
 the panel verdict, the counts and the crit URL. `cd` into the worktree it names and work there for every
 phase.
 
@@ -137,10 +137,16 @@ yourself while they run. Both are read-only and neither blocks the other:
   reviewer decide which should change. **If the PR is part of a stack** (base isn't one of config's `trunk branches`, or
   comments reference stacked PRs), the same agent checks the adjacent PRs so you don't flag what is
   intentionally deferred there.
-- **Read the PR's CI checks** the script saved (`checks.txt` in `$REVIEW_STATE/review-pr/pr-<n>/`), or `gh pr checks`. A red
-  typecheck, lint or test on a changed file is a free HIGH (its CI run is the repro), and everything CI covers is off
-  your list. **Never run typecheck, lint, builds or test suites yourself**: CI runs them on the PR, and several runs
-  at once on one machine starve it. One targeted repro for one finding (a single test file, `-t` one case) is fine.
+- **CI is not part of this review.** It is someone else's PR: its checks are its author's to watch. Don't read, wait on
+  or gate anything on them, and never offer a step that waits for a check to report ("Read test (rest) once it
+  reports", "Approve after CI is green"): approve, comment or request changes on the code as it stands. **Never run
+  typecheck, lint, builds or test suites yourself** either; one targeted repro for one finding (a single test file,
+  `-t` one case) is fine.
+- **Review the tests as code.** Do they cover the behaviour this PR changes (each new branch, the failure paths, the
+  bug it fixes), at the right level (unit for logic, integration where the seams are), named for the behaviour, each
+  case asserting one thing? Flag tests that pin implementation details, mock what they should exercise, share mutable
+  state, depend on time/order/network, or duplicate a fixture the repo already has. A changed behaviour with no test
+  is a finding; a red check is not.
 - If `node_modules` is missing and you need types or implementations of dependencies, run config's `install` in the
   background rather than guessing.
 

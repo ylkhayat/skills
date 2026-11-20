@@ -92,8 +92,6 @@ CRIT_RANGE=$range
 ENV
 
 # No typecheck, lint or tests here: CI runs them on the PR, and several reviews at once ran them all on one machine.
-# The review reads the PR's own checks instead (gh pr checks, below).
-gh pr checks "$n" >"$out/checks.txt" 2>&1 || true
 
 # Launch crit now rather than in Phase 1. Everything it needs is already computed, and
 # the reviewer should be reading the diff while Phase 0's triage is still running —
@@ -109,7 +107,6 @@ round       $round
 range       $range
 worktree    $wt        (cd there for every phase)
 context     $out/{meta,comments,reviews}.json  diff.patch
-checks      $out/checks.txt  (the PR's CI, as GitHub has it now)
 size        $files files · $lines lines changed · $risky risky paths
 comments    $human human · $bots bot   (reply on these before authoring anything new)
 ticket      ${ticket:-none}
