@@ -39,8 +39,37 @@ null-keyed comments are **hidden from the browser** while `crit status` still co
 
 **On 0.23.0 it also happens silently with exactly one session for the cwd**: bare `crit comment`
 printed `Added N comments`, no `Note:`, and wrote `focus_key: null` anyway. Passing
-`--session <id>` stamped the range key. Pass `--session` on every `crit comment`, and check
-`review.json` for null keys after each call rather than trusting the absence of the Note.
+`--session <id>` stamped the range key. **But on 2026-10-26 (0.23.0, same setup) it was the reverse:**
+`--session` wrote null keys on 8 inline and 1 review-level comment (silently, `Added N`), and bare
+`crit comment` from the review's own cwd stamped all of them. Neither form is reliable, so check
+`review.json` for null keys after every call rather than trusting the absence of the Note. If they
+are null, drop those entries from `review.json` and re-author with the other form.
+
+**A detached-HEAD worktree defeats `--session` too (0.23.0, 2026-10-26).** The session recorded
+`branch: "HEAD"` and every `crit comment --session <id>` wrote no `focus_key`. Put the worktree on a
+local branch (`git switch -c revise-<n>`) *before* launching crit; after that `--session` stamps
+correctly. `crit comment --clear --session <id>` clears the hidden entries through the daemon.
+
+**When `crit comment` will not stamp at all, post through the daemon's HTTP API (0.23.0, 2026-10-26).**
+Under review-deck (`CRIT_HOST=0.0.0.0`, a `CRIT_DIR` naming a mac path), every form of `crit comment`
+— bare, `--session`, with those vars unset, after a fresh daemon — wrote no `focus_key`. The browser's
+own endpoint stamps correctly: `POST /api/file/comments?path=<file>` with
+`{"start_line","end_line","body","author"}` (201, returns the stamped comment), and
+`POST /api/comments` with `{"body","author"}` for a review-level one. Then drop the null-key entries
+from `review.json` (deleting entries, not editing keys). A daemon answering `{"status":"loading"}` is
+still initialising; anything written then lands unstamped, so wait for `/api/session` first.
+
+**When even `--session` writes unstamped entries (seen 2026-11-09, 0.23.0, one session, daemon up):**
+go through the daemon's HTTP API instead, which stamps every entry. Inline:
+`POST /api/file/comments?path=<file>` with `{"start_line","end_line","body","author"}`. Review-level:
+`POST /api/comments` with `{"body","author"}`. Delete: `DELETE /api/comment/<id>?path=<file>`
+(inline) and `DELETE /api/review-comment/<id>` (review-level). Remove the unstamped entries with
+those deletes first, then re-post.
+
+**Replies through the HTTP API (0.23.0, 2026-11-13):** `POST /api/comment/<id>/replies?path=<file>`
+with `{"body","author"}` (201). A `reply_to` field on `POST /api/file/comments` is ignored and lands
+as a new top-level comment. Under review-deck's `CRIT_DIR`, `crit comment --json` with `reply_to`
+entries printed `Added N replies` and wrote nothing to the daemon's review file.
 
 The classic symptom is `crit status` says N, the browser shows 0. That is **not** "you launched with
 `--pr`" — it is a null `focus_key`, almost always from multiple sessions sharing the cwd. A restart
@@ -75,6 +104,11 @@ re-author.
   endpoint the diff view actually fetches. Its length must match what you authored for that file.
 - **Review-level comments**: `/api/session` → top-level `review_comments`.
 - **Every comment in `review.json`** (path from `crit status`) must have a **non-null `focus_key`**.
+
+**Wait ~3 s before the first check (0.23.0).** Right after `crit comment`, `/api/file/comments` and
+`/api/session` can still return 0 while `review.json` already holds the stamped entries; the live
+reload catches up a few seconds later. A 0 read immediately after authoring is not a failure. Check
+`focus_key` in the file, sleep, re-read.
 
 Do not trust `/api/comments` (returns `[]`) or `/api/session`'s per-file `comment_count` (reads 0 even
 when comments render correctly).
@@ -187,6 +221,11 @@ global one — so a repo that defines its own finish hook silently replaces this
 
 **There is no per-comment delete.** Edit `review.json` directly (path from `crit status`) with jq or
 Python — never string-edit the JSON. The daemon picks the edit up live.
+
+**Never `DELETE /api/comments` (0.23.0, 2026-11-09).** It ignores any `?id=` and clears the whole
+review: every inline and review-level comment, and `review.json` itself is deleted. It answers 200.
+`DELETE /api/comments/<id>` is a 404. To fix a comment's author, author it right the first time: one
+`crit comment` call per `--author`, since the flag applies to every entry in the file.
 
 ## `crit status` resolves by branch, not by session
 

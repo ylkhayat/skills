@@ -25,9 +25,8 @@ Then a blank line, then the content. Both render it italic. No emoji, no bold, n
 
 ## Rules
 
-- **Same marker, same size, every time.** Never shrink it to `<sub>` small print or reword it. On a surface that renders images, that means the badge — on every unit, review bodies and inline comments alike.
-- **Top, not bottom.** A reader decides how to read the content before they read it.
+- **Use the surface's marker verbatim.** Never shrink it to `<sub>` small print or reword it. On a surface that renders images, use the badge on every unit, review bodies and inline comments alike.
 - **One marker per published unit** — one per comment, one per PR body, one per message. Not per paragraph, not per finding inside a review.
+- **Drafts carry it too.** Put the marker at the top of the draft, so the submitted text has it. When refreshing an already-posted body, keep the single existing marker and do not add a second.
 - **Human-written content stays unmarked.** If the user wrote it and you only posted it, it is theirs. If you drafted it and they edited it, it is still marked.
 - **Commits are not a surface.** Follow the repo's commit convention; do not add a marker or a `Co-Authored-By` trailer unless the repo asks for one.
-- Content posted under a human's account is exactly why this exists — the account says a person, the marker says otherwise.
