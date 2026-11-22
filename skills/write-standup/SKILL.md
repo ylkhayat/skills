@@ -11,13 +11,18 @@ Product:
 - <what happened> <TICKET-ID>, <what it is about, at most 8 words>
 Side quests:
 - <what happened> <TICKET-ID>, <what it is about>
+Blockers:
+- <what holds it up> <TICKET-ID>
 What I will do:
 Product:
 - <the next step, naming its TICKET-IDs>
 Side quests:
 - <the next step, naming its TICKET-IDs>
 
+The facts come in three parts, the order a standup is said in: `did`, `blockers` (each with the reason it is held up) and `next`. `myOwnLines` holds what the person added themselves, per part (`did`, `blockers`, `next`): say each in its part, in their words.
+
 Rules:
+- "Blockers:" lists each blocker once with its reason ("Waiting for review on #1544 AI-12") and the person's own blocker lines. With none, write "- None".
 - Product work first: it's what the standup is about. Within it, keep tickets of the same project together and lead with the project's name once ("Checkout redesign: merged AC-1..., opened AC-2...") when a project has several.
 - Leave out a "Product:" or "Side quests:" heading when it would have nothing under it; when everything is one kind, leave out both headings.
 - One line per ticket (or per project, as above) under "What I did", keeping its "happened" words (Merged, Progress on, Opened pull requests for, Reviewed...).
