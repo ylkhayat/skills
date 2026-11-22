@@ -51,7 +51,23 @@ reviewer's sentence, not your reading of the skill.
 
 Launch the daemon and hand over the URL on every round, including one where every thread already landed.
 The reviewer reads the code themselves; the session is *for them*, not a delivery mechanism for your
-findings. The one exception is the word **`autonomous`** in the reviewer's request.
+findings. The exceptions are the word **`autonomous`** in the reviewer's request, and a review with
+**no crit** (below).
+
+## No crit (Concierge)
+
+Some reviewers don't use crit: Concierge says so in the request and names a file where it reads the review
+(crit's `review.json` shape, under its own key). Then crit is never launched, waited on or called:
+
+- Phase 0 as usual, minus the crit URL. Skip Phase 1 and the ticket gate's wait for a crit reply (put the
+  rescope call in your summary instead).
+- Phase 2 authors `findings.json` exactly as always, then renders it to that file instead of crit:
+  `python3 scripts/render.py concierge findings.json <file> > <file>.tmp && mv <file>.tmp <file>`
+  (create the folder first). Passing the old file keeps what the reviewer dropped there.
+- No Discuss rounds: end your turn with a short summary. The reviewer keeps or drops each finding on the PR
+  page; a later request ("look again", a note) is the next round, re-rendered the same way.
+- Phase 5, when asked to post: a finding the file marks `"resolved": true` was dropped by the reviewer. Remove
+  it from `findings.json` first (that is Phase 4's cleanup, already asked for), then `gh-review.sh submit`.
 
 ## Phases
 

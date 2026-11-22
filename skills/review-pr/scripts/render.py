@@ -5,6 +5,8 @@
     render.py body    <findings.json>   -> the GitHub review body (marker + Round badge)
     render.py payload <findings.json>   -> POST /pulls/<n>/reviews payload
     render.py event   <findings.json>   -> APPROVE | COMMENT  (read off the asks)
+    render.py concierge <findings.json> [review.json] -> the review as Concierge reads it, no crit
+                                        (crit's review.json shape; keeps the kept/dropped marks of the old one)
     render.py --selftest
 
 Only crit bodies go out unmarked: crit is a private working document. `body` and
@@ -265,6 +267,29 @@ def crit_payload(doc):
     return entries
 
 
+def concierge_review(doc, old=None):
+    """No crit: the review in crit's review.json shape, which Concierge reads and shows on the PR page. A finding the
+    reviewer dropped there is "resolved": kept so across rounds by its id, and left out when posting."""
+    dropped = {c.get("id") for c in (old or {}).get("review_comments", []) if c.get("resolved")}
+    for f in (old or {}).get("files", {}).values():
+        dropped |= {c.get("id") for c in f.get("comments", []) if c.get("resolved")}
+    def one(cid, text, scope, start=None, end=None):
+        c = {"id": cid, "body": text, "author": "Claude Code", "scope": scope, "resolved": cid in dropped}
+        if end:
+            c["start_line"], c["end_line"] = str(start or end), str(end)
+        return c
+    out = {"files": {}, "review_comments": [one("summary", body(doc, marked=False), "review")]}
+    for f in doc.get("findings", []):
+        if f.get("reply_to"):
+            continue  # a reply answers a crit thread: there are none without crit
+        if not f.get("line"):
+            out["review_comments"].append(one(f["id"], finding_body(f), "review"))
+            continue
+        out["files"].setdefault(f["path"], {"comments": []})["comments"].append(
+            one(f["id"], finding_body(f), "line", f.get("start_line"), f["line"]))
+    return out
+
+
 def gh_payload(doc):
     comments = []
     for f in doc.get("findings", []):
@@ -472,6 +497,13 @@ def selftest():
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--selftest":
         return selftest()
+    if len(sys.argv) == 4 and sys.argv[1] == "concierge":
+        try:
+            old = json.load(open(sys.argv[3]))
+        except (OSError, ValueError):
+            old = None
+        print(json.dumps(concierge_review(load(sys.argv[2]), old), indent=1))
+        return
     if len(sys.argv) != 3:
         die(__doc__)
     cmd, path = sys.argv[1], sys.argv[2]
@@ -481,6 +513,7 @@ def main():
         "body": lambda: body(doc),
         "payload": lambda: json.dumps(gh_payload(doc), indent=1),
         "event": lambda: event(doc),
+        "concierge": lambda: json.dumps(concierge_review(doc), indent=1),
     }.get(cmd)
     if not out:
         die(f"unknown command {cmd!r}")
